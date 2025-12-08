@@ -82,7 +82,7 @@ async function uploadBase64Fallback(uri: string, storagePath: string, filename: 
     }
 }
 
-async function uploadImage(uri: string): Promise<string> {
+async function uploadImage(uri: string, onProgress?: (progress: number) => void): Promise<string> {
     const filename = uri.substring(uri.lastIndexOf('/') + 1);
     const storagePath = `images/${Date.now()}_${filename}`;
 
@@ -117,6 +117,8 @@ async function uploadImage(uri: string): Promise<string> {
                 (snapshot) => {
                     const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
                     console.log('Upload is ' + progress + '% done');
+                    if (onProgress) onProgress(progress);
+
                     switch (snapshot.state) {
                         case 'paused':
                             console.log('Upload is paused');
@@ -161,12 +163,14 @@ async function uploadImage(uri: string): Promise<string> {
    Component
    ------------------------- */
 
+
 export default function SellScreen() {
     const insets = useSafeAreaInsets();
     const inputBgColor = useThemeColor({}, 'background');
     const textColor = useThemeColor({}, 'text');
     const iconColor = useThemeColor({}, 'icon');
     const [uploading, setUploading] = useState(false);
+    const [uploadProgress, setUploadProgress] = useState(0);
 
     const pickImage = async (setFieldValue: (field: string, value: any) => void) => {
         Alert.alert(
@@ -224,11 +228,12 @@ export default function SellScreen() {
                             }
 
                             setUploading(true);
+                            setUploadProgress(0);
                             try {
                                 let imageUrl = values.image;
                                 // Only upload if it's a local file (not already an HTTP URL)
                                 if (!imageUrl.startsWith('http')) {
-                                    imageUrl = await uploadImage(imageUrl);
+                                    imageUrl = await uploadImage(imageUrl, (p) => setUploadProgress(p));
                                 }
 
                                 const finalData = { ...values, image: imageUrl };
@@ -253,7 +258,10 @@ export default function SellScreen() {
                                     disabled={uploading}
                                 >
                                     {uploading ? (
-                                        <ActivityIndicator size="large" color="#0a7ea4" />
+                                        <ThemedView style={styles.progressContainer}>
+                                            <ThemedText style={styles.progressText}>{Math.round(uploadProgress)}%</ThemedText>
+                                            <ActivityIndicator size="small" color="#0a7ea4" />
+                                        </ThemedView>
                                     ) : values.image ? (
                                         <Image
                                             source={{ uri: values.image }}
@@ -389,6 +397,15 @@ const styles = StyleSheet.create({
     imageText: {
         marginTop: 12,
         color: '#888',
+    },
+    progressContainer: {
+        justifyContent: 'center',
+        alignItems: 'center',
+        gap: 5,
+    },
+    progressText: {
+        fontSize: 12,
+        color: '#666',
     },
     errorText: {
         color: '#ff4444',
