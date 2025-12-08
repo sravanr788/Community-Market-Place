@@ -1,5 +1,5 @@
 import React from 'react';
-import { StyleSheet, FlatList, View } from 'react-native';
+import { StyleSheet, FlatList, useWindowDimensions } from 'react-native';
 import { Header } from '@/components/header';
 import { ProductCard } from '@/components/product-card';
 import { ThemedView } from '@/components/themed-view';
@@ -50,6 +50,11 @@ const MOCK_PRODUCTS = [
 ];
 
 export default function HomeScreen() {
+  const { width } = useWindowDimensions();
+
+  // Responsive column calculation
+  const numColumns = width > 900 ? 3 : width > 600 ? 2 : 1;
+
   const renderItem = ({ item }: { item: typeof MOCK_PRODUCTS[0] }) => (
     <ProductCard
       title={item.title}
@@ -63,9 +68,12 @@ export default function HomeScreen() {
     <ThemedView style={styles.container}>
       <Header />
       <FlatList
+        key={numColumns} // Force re-render when columns change
         data={MOCK_PRODUCTS}
         renderItem={renderItem}
         keyExtractor={(item) => item.id}
+        numColumns={numColumns}
+        columnWrapperStyle={numColumns > 1 ? styles.columnWrapper : undefined}
         contentContainerStyle={styles.listContent}
         showsVerticalScrollIndicator={false}
       />
@@ -80,5 +88,8 @@ const styles = StyleSheet.create({
   listContent: {
     paddingHorizontal: 12,
     paddingBottom: 100, // Bottom tab bar offset
+  },
+  columnWrapper: {
+    justifyContent: 'space-between',
   },
 });
