@@ -1,5 +1,10 @@
-import React from 'react';
-import { StyleSheet, TextInput, Image, KeyboardAvoidingView, Platform, ScrollView, TouchableOpacity, Alert } from 'react-native';
+import { StyleSheet, TextInput, Image, KeyboardAvoidingView, Platform, ScrollView, TouchableOpacity, Alert, ActivityIndicator } from 'react-native';
+import { useState } from 'react';
+import * as ImagePicker from 'expo-image-picker';
+// legacy FileSystem import used only for last-resort base64 fallback
+import * as FileSystemLegacy from 'expo-file-system/legacy';
+import { ref, uploadBytes, getDownloadURL, uploadString, uploadBytesResumable } from "firebase/storage";
+import { storage } from '../../firebaseConfig';
 import { Formik } from 'formik';
 import * as Yup from 'yup';
 import { ThemedText } from '@/components/themed-text';
@@ -20,13 +25,185 @@ const ProductSchema = Yup.object().shape({
     description: Yup.string()
         .min(10, 'Description must be at least 10 characters')
         .required('Required'),
+    image: Yup.string(),
 });
+
+interface SellFormValues {
+    title: string;
+    price: string;
+    description: string;
+    image: string | null;
+}
+
+/* -------------------------
+   Helper: multi-strategy upload
+   Tries: XHR -> fetch -> base64 fallback
+   ------------------------- */
+
+function uriToBlobXHR(uri: string): Promise<Blob> {
+    return new Promise((resolve, reject) => {
+        try {
+            const xhr = new XMLHttpRequest();
+            xhr.onerror = () => reject(new Error('uriToBlobXHR: network request failed'));
+            xhr.onreadystatechange = () => {
+                if (xhr.readyState === 4) {
+                    if (xhr.status === 200 || xhr.status === 0) {
+                        resolve(xhr.response);
+                    } else {
+                        reject(new Error(`uriToBlobXHR: bad status ${xhr.status}`));
+                    }
+                }
+            };
+            xhr.responseType = 'blob';
+            xhr.open('GET', uri, true);
+            xhr.send(null);
+        } catch (err) {
+            reject(err);
+        }
+    });
+}
+
+async function uriToBlobFetch(uri: string): Promise<Blob> {
+    const res = await fetch(uri);
+    if (!res.ok) throw new Error(`uriToBlobFetch: fetch failed status ${res.status}`);
+    return await res.blob();
+}
+
+async function uploadBase64Fallback(uri: string, storagePath: string, filename: string) {
+    try {
+        const base64 = await FileSystemLegacy.readAsStringAsync(uri, { encoding: FileSystemLegacy.EncodingType.Base64 });
+        const storageRef = ref(storage, storagePath);
+        const metadata = { contentType: filename.toLowerCase().endsWith('.png') ? 'image/png' : 'image/jpeg' };
+        const snapshot = await uploadString(storageRef, base64, 'base64', metadata);
+        const url = await getDownloadURL(snapshot.ref);
+        return url;
+    } catch (err: any) {
+        throw new Error(`uploadBase64Fallback failed: ${err?.message ?? err}`);
+    }
+}
+
+async function uploadImage(uri: string): Promise<string> {
+    const filename = uri.substring(uri.lastIndexOf('/') + 1);
+    const storagePath = `images/${Date.now()}_${filename}`;
+
+    let blob: Blob | null = null;
+
+    // try XHR
+    try {
+        blob = await uriToBlobXHR(uri);
+        console.log('uploadImage: got blob via XHR');
+    } catch (xhrErr) {
+        console.warn('uriToBlobXHR failed:', xhrErr?.message ?? xhrErr);
+        // try fetch
+        try {
+            blob = await uriToBlobFetch(uri);
+            console.log('uploadImage: got blob via fetch');
+        } catch (fetchErr) {
+            console.warn('uriToBlobFetch failed:', fetchErr?.message ?? fetchErr);
+            // fallthrough to base64 fallback
+        }
+    }
+
+    if (blob) {
+        return new Promise((resolve, reject) => {
+            const ext = filename.split('.').pop()?.toLowerCase();
+            const contentType = ext === 'png' ? 'image/png' : ext === 'gif' ? 'image/gif' : 'image/jpeg';
+            const metadata = { contentType };
+
+            const storageRef = ref(storage, storagePath);
+            const uploadTask = uploadBytesResumable(storageRef, blob, metadata);
+
+            uploadTask.on('state_changed',
+                (snapshot) => {
+                    const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+                    console.log('Upload is ' + progress + '% done');
+                    switch (snapshot.state) {
+                        case 'paused':
+                            console.log('Upload is paused');
+                            break;
+                        case 'running':
+                            console.log('Upload is running');
+                            break;
+                    }
+                },
+                (error) => {
+                    // @ts-ignore
+                    if (blob && typeof blob.close === 'function') blob.close();
+                    console.error('uploadBytesResumable failed:', error);
+                    reject(error);
+                },
+                () => {
+                    // @ts-ignore
+                    if (blob && typeof blob.close === 'function') blob.close();
+                    getDownloadURL(uploadTask.snapshot.ref).then((downloadURL) => {
+                        console.log('File available at', downloadURL);
+                        resolve(downloadURL);
+                    });
+                }
+            );
+        });
+    }
+
+    // fallback
+    try {
+        console.warn('uploadImage: falling back to base64 upload (legacy FileSystem).');
+        const url = await uploadBase64Fallback(uri, storagePath, filename);
+        console.log('uploadImage: uploaded via base64 ->', url);
+        return url;
+    } catch (finalErr) {
+        console.error('uploadImage: all methods failed. final error:', finalErr);
+        // Throw NSError with useful message
+        throw new Error(`uploadImage failed for ${uri}. See logs for details. ${finalErr?.message ?? finalErr}`);
+    }
+}
+
+/* -------------------------
+   Component
+   ------------------------- */
 
 export default function SellScreen() {
     const insets = useSafeAreaInsets();
     const inputBgColor = useThemeColor({}, 'background');
     const textColor = useThemeColor({}, 'text');
     const iconColor = useThemeColor({}, 'icon');
+    const [uploading, setUploading] = useState(false);
+
+    const pickImage = async (setFieldValue: (field: string, value: any) => void) => {
+        Alert.alert(
+            "Upload Photo",
+            "Choose a source",
+            [
+                {
+                    text: "Camera",
+                    onPress: async () => {
+                        const result = await ImagePicker.launchCameraAsync({
+                            allowsEditing: true,
+                            aspect: [4, 3],
+                            quality: 1,
+                        });
+                        if (!result.canceled) {
+                            setFieldValue('image', result.assets[0].uri);
+                        }
+                    }
+                },
+                {
+                    text: "Library",
+                    onPress: async () => {
+                        const result = await ImagePicker.launchImageLibraryAsync({
+                            mediaTypes: ImagePicker.MediaTypeOptions.Images,
+                            allowsEditing: true,
+                            aspect: [4, 3],
+                            quality: 1,
+                        });
+                        if (!result.canceled) {
+                            setFieldValue('image', result.assets[0].uri);
+                        }
+                    }
+                },
+                { text: "Cancel", style: "cancel" }
+            ]
+        );
+    };
 
     return (
         <ThemedView style={[styles.container, { paddingTop: insets.top }]}>
@@ -37,23 +214,61 @@ export default function SellScreen() {
                 <ScrollView contentContainerStyle={styles.scrollContent}>
                     <ThemedText type="title" style={styles.header}>Sell Item</ThemedText>
 
-                    <Formik
-                        initialValues={{ title: '', price: '', description: '' }}
+                    <Formik<SellFormValues>
+                        initialValues={{ title: '', price: '', description: '', image: null }}
                         validationSchema={ProductSchema}
-                        onSubmit={(values, { resetForm }) => {
-                            Alert.alert('Success', 'Product listed successfully! (Demo)', [
-                                { text: 'OK', onPress: () => resetForm() }
-                            ]);
-                            console.log(values);
+                        onSubmit={async (values, { resetForm }) => {
+                            if (!values.image) {
+                                Alert.alert('Error', 'Please select an image');
+                                return;
+                            }
+
+                            setUploading(true);
+                            try {
+                                let imageUrl = values.image;
+                                // Only upload if it's a local file (not already an HTTP URL)
+                                if (!imageUrl.startsWith('http')) {
+                                    imageUrl = await uploadImage(imageUrl);
+                                }
+
+                                const finalData = { ...values, image: imageUrl };
+                                console.log('Product Data:', finalData);
+                                Alert.alert('Success', 'Product listed successfully!', [
+                                    { text: 'OK', onPress: () => resetForm() }
+                                ]);
+                            } catch (error) {
+                                console.error('onSubmit upload error:', error);
+                                Alert.alert('Error', 'Failed to upload image. Please try again.');
+                            } finally {
+                                setUploading(false);
+                            }
                         }}
                     >
-                        {({ handleChange, handleBlur, handleSubmit, values, errors, touched }) => (
+                        {({ handleChange, handleBlur, handleSubmit, setFieldValue, values, errors, touched }) => (
                             <ThemedView style={styles.form}>
                                 {/* Image Placeholder */}
-                                <TouchableOpacity style={styles.imagePlaceholder}>
-                                    <Ionicons name="camera-outline" size={48} color="#ccc" />
-                                    <ThemedText style={styles.imageText}>Tap to add photos</ThemedText>
+                                <TouchableOpacity
+                                    style={styles.imagePlaceholder}
+                                    onPress={() => pickImage(setFieldValue)}
+                                    disabled={uploading}
+                                >
+                                    {uploading ? (
+                                        <ActivityIndicator size="large" color="#0a7ea4" />
+                                    ) : values.image ? (
+                                        <Image
+                                            source={{ uri: values.image }}
+                                            style={{ width: '100%', height: '100%', borderRadius: 16 }}
+                                        />
+                                    ) : (
+                                        <>
+                                            <Ionicons name="camera-outline" size={48} color="#ccc" />
+                                            <ThemedText style={styles.imageText}>Tap to add photos</ThemedText>
+                                        </>
+                                    )}
                                 </TouchableOpacity>
+                                {errors.image && touched.image ? (
+                                    <ThemedText style={styles.errorText}>{errors.image}</ThemedText>
+                                ) : null}
 
                                 {/* Title Input */}
                                 <ThemedView style={styles.inputGroup}>
@@ -107,8 +322,14 @@ export default function SellScreen() {
                                 </ThemedView>
 
                                 {/* Submit Button */}
-                                <TouchableOpacity onPress={() => handleSubmit()} style={styles.submitButton}>
-                                    <ThemedText style={styles.submitButtonText}>Post Item</ThemedText>
+                                <TouchableOpacity
+                                    onPress={() => handleSubmit()}
+                                    style={[styles.submitButton, uploading && styles.submitButtonDisabled]}
+                                    disabled={uploading}
+                                >
+                                    <ThemedText style={styles.submitButtonText}>
+                                        {uploading ? 'Uploading...' : 'Post Item'}
+                                    </ThemedText>
                                 </TouchableOpacity>
 
                             </ThemedView>
@@ -190,5 +411,8 @@ const styles = StyleSheet.create({
         color: '#fff',
         fontSize: 16,
         fontWeight: 'bold',
+    },
+    submitButtonDisabled: {
+        opacity: 0.7,
     },
 });
