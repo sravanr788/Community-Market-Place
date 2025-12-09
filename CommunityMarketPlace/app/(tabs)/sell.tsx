@@ -1,10 +1,10 @@
 import { StyleSheet, TextInput, Image, KeyboardAvoidingView, Platform, ScrollView, TouchableOpacity, Alert, ActivityIndicator } from 'react-native';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import * as ImagePicker from 'expo-image-picker';
-// legacy FileSystem import used only for last-resort base64 fallback
 import * as FileSystemLegacy from 'expo-file-system/legacy';
-import { ref, uploadBytes, getDownloadURL, uploadString, uploadBytesResumable } from "firebase/storage";
-import { storage } from '../../firebaseConfig';
+import { ref, getDownloadURL, uploadString, uploadBytesResumable } from "firebase/storage";
+import { getDocs, collection, getFirestore } from "firebase/firestore";
+import { app, storage } from '../../firebaseConfig';
 import { Formik } from 'formik';
 import * as Yup from 'yup';
 import { ThemedText } from '@/components/themed-text';
@@ -159,10 +159,33 @@ async function uploadImage(uri: string, onProgress?: (progress: number) => void)
     }
 }
 
-/* -------------------------
-   Component
-   ------------------------- */
+// fetch the products collection from firebase
+async function fetchProducts() {
+    const db = getFirestore(app);
 
+    console.log("Fetching products...");
+    try {
+        const colRef = collection(db, "products");
+        const snapshot = await getDocs(colRef);
+
+        if (snapshot.empty) {
+            console.log("⚠️ No documents found in 'products' collection.");
+            return;
+        }
+
+        snapshot.forEach((doc) => {
+            console.info("🟩 Doc ID:", doc.id, "→", doc.data());
+        });
+
+        console.info("✅ Fetch finished. Total docs:", snapshot.size);
+    } catch (err) {
+        console.error("❌ Error fetching products:", err);
+    }
+}
+
+useEffect(() => {
+    fetchProducts();
+}, []);
 
 export default function SellScreen() {
     const insets = useSafeAreaInsets();
