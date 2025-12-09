@@ -1,61 +1,61 @@
-import React from 'react';
-import { StyleSheet, FlatList, useWindowDimensions } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { StyleSheet, FlatList, useWindowDimensions, ActivityIndicator, Text } from 'react-native';
+import { getFirestore, collection, onSnapshot } from 'firebase/firestore';
+import { app } from '../../firebaseConfig';
 import { Header } from '@/components/header';
 import { ProductCard } from '@/components/product-card';
 import { ThemedView } from '@/components/themed-view';
 
-const MOCK_PRODUCTS = [
-  {
-    id: '1',
-    title: 'Vintage Film Camera',
-    price: '$120',
-    category: 'Electronics',
-    image: 'https://images.unsplash.com/photo-1526170375885-4d8ecf77b99f?auto=format&fit=crop&q=80&w=400',
-  },
-  {
-    id: '2',
-    title: 'Modern Lamp',
-    price: '$45',
-    category: 'Home & Living',
-    image: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSTlednML_LSGmZQq-kN4aGbHQkFRPRyb-2Dw&s',
-  },
-  {
-    id: '3',
-    title: 'Leather Backpack',
-    price: '$85',
-    category: 'Fashion',
-    image: 'https://images.unsplash.com/photo-1553062407-98eeb64c6a62?auto=format&fit=crop&q=80&w=400',
-  },
-  {
-    id: '4',
-    title: 'Wireless Headphones',
-    price: '$199',
-    category: 'Electronics',
-    image: 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?auto=format&fit=crop&q=80&w=400',
-  },
-  {
-    id: '5',
-    title: 'Succulent Plant',
-    price: '$15',
-    category: 'Plants',
-    image: 'https://images.unsplash.com/photo-1459411552884-841db9b3cc2a?auto=format&fit=crop&q=80&w=400',
-  },
-  {
-    id: '6',
-    title: 'Mechanical Keyboard',
-    price: '$150',
-    category: 'Electronics',
-    image: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcShX72VjMtF80D9Gsk24CKQJ6ao9T_-Xfg7Ag&s',
-  },
-];
+interface Product {
+  id: string;
+  title: string;
+  price: string;
+  category: string;
+  image: string;
+}
+
+
 
 export default function HomeScreen() {
   const { width } = useWindowDimensions();
+  const [products, setProducts] = useState<Product[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   // Responsive column calculation
   const numColumns = width > 900 ? 3 : width > 600 ? 2 : 1;
 
-  const renderItem = ({ item }: { item: typeof MOCK_PRODUCTS[0] }) => (
+  useEffect(() => {
+    const db = getFirestore(app);
+    const productsRef = collection(db, 'products');
+
+    const unsubscribe = onSnapshot(productsRef,
+      (snapshot) => {
+        const productsData: Product[] = [];
+        snapshot.forEach((doc) => {
+          const data = doc.data();
+          productsData.push({
+            id: doc.id,
+            title: data.title || 'Untitled',
+            price: typeof data.price === 'number' ? `$${data.price}` : data.price || '$0',
+            category: data.category || 'Uncategorized',
+            image: data.image || 'https://via.placeholder.com/400', // Fallback image
+          });
+        });
+        setProducts(productsData);
+        setLoading(false);
+      },
+      (err) => {
+        console.error("Error fetching products:", err);
+        setError("Failed to load products. Please try again later.");
+        setLoading(false);
+      }
+    );
+
+    return () => unsubscribe();
+  }, []);
+
+  const renderItem = ({ item }: { item: Product }) => (
     <ProductCard
       title={item.title}
       price={item.price}
@@ -64,12 +64,28 @@ export default function HomeScreen() {
     />
   );
 
+  if (loading) {
+    return (
+      <ThemedView style={[styles.container, styles.center]}>
+        <ActivityIndicator size="large" color="#0a7ea4" />
+      </ThemedView>
+    );
+  }
+
+  if (error) {
+    return (
+      <ThemedView style={[styles.container, styles.center]}>
+        <Text style={styles.errorText}>{error}</Text>
+      </ThemedView>
+    );
+  }
+
   return (
     <ThemedView style={styles.container}>
       <Header />
       <FlatList
         key={numColumns} // Force re-render when columns change
-        data={MOCK_PRODUCTS}
+        data={products}
         renderItem={renderItem}
         keyExtractor={(item) => item.id}
         numColumns={numColumns}
@@ -91,5 +107,15 @@ const styles = StyleSheet.create({
   },
   columnWrapper: {
     justifyContent: 'space-between',
+  },
+  center: {
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  errorText: {
+    color: 'red',
+    fontSize: 16,
+    textAlign: 'center',
+    margin: 20,
   },
 });
