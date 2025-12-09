@@ -1,0 +1,202 @@
+[
+    {
+        "category": "Home",
+        "createdAt": "2025-12-09T11:46:04.000Z",
+        "description": "Handmade pottery set including 4 plates, bowls, and mugs, perfect for daily use or as a gift.",
+        "image": "https://m.media-amazon.com/images/I/71hzHZzH5YL.jpg",
+        "price": 150,
+        "seller": "Artisan Crafts",
+        "title": "Handmade Pottery Set",
+        "updatedAt": "2025-12-09T11:50:40.000Z"
+    },
+    {
+        "category": "Home",
+        "createdAt": "2025-12-09T10:30:00.000Z",
+        "description": "Handwoven bamboo bedside tray, ideal for keeping essentials within reach.",
+        "image": "https://m.media-amazon.com/images/I/61gAkE4qPzL.jpg",
+        "price": 89,
+        "seller": "Bamboo Crafts Co.",
+        "title": "Bamboo Bedside Tray",
+        "updatedAt": "2025-12-09T10:45:00.000Z"
+    },
+    {
+        "category": "Home",
+        "createdAt": "2025-12-09T09:15:00.000Z",
+        "description": "Artisan ceramic vase with a unique donut shape, perfect for modern home decor.",
+        "image": "https://m.media-amazon.com/images/I/71zX0CWr-qL.jpg",
+        "price": 65,
+        "seller": "Ceramic Art Studio",
+        "title": "Ceramic Donut Vase",
+        "updatedAt": "2025-12-09T09:30:00.000Z"
+    },
+    {
+        "category": "Home",
+        "createdAt": "2025-12-09T08:00:00.000Z",
+        "description": "Hand-painted wooden wall art featuring abstract designs, ready to hang.",
+        "image": "https://m.media-amazon.com/images/I/71H0YYiRZzL.jpg",
+        "price": 120,
+        "seller": "Wooden Artisans",
+        "title": "Abstract Wooden Wall Art",
+        "updatedAt": "2025-12-09T08:15:00.000Z"
+    },
+    {
+        "category": "Home",
+        "createdAt": "2025-12-09T07:45:00.000Z",
+        "description": "Handcrafted macrame wall hanging, adding a boho touch to any room.",
+        "image": "https://m.media-amazon.com/images/I/619iTZXNuOL.jpg",
+        "price": 75,
+        "seller": "Boho Crafts",
+        "title": "Macrame Wall Hanging",
+        "updatedAt": "2025-12-09T08:00:00.000Z"
+    },
+    {
+        "category": "Home",
+        "createdAt": "2025-12-09T07:30:00.000Z",
+        "description": "Handmade linen throw pillow with embroidered floral patterns.",
+        "image": "https://m.media-amazon.com/images/I/61QmZ9-FkLL.jpg",
+        "price": 45,
+        "seller": "Linen & Lace",
+        "title": "Embroidered Linen Pillow",
+        "updatedAt": "2025-12-09T07:45:00.000Z"
+    },
+    {
+        "category": "Home",
+        "createdAt": "2025-12-09T07:15:00.000Z",
+        "description": "Artisan-made metal lantern for indoor or outdoor use, with a rustic finish.",
+        "image": "https://m.media-amazon.com/images/I/61apMvwsonL.jpg",
+        "price": 95,
+        "seller": "Metal Artisans",
+        "title": "Rustic Metal Lantern",
+        "updatedAt": "2025-12-09T07:30:00.000Z"
+    },
+    {
+        "category": "Home",
+        "createdAt": "2025-12-09T07:00:00.000Z",
+        "description": "Hand-knitted wool blanket, soft and warm for cozy evenings.",
+        "image": "https://m.media-amazon.com/images/I/711kjIdQPHL.jpg",
+        "price": 130,
+        "seller": "Wool & Warmth",
+        "title": "Hand-Knitted Wool Blanket",
+        "updatedAt": "2025-12-09T07:15:00.000Z"
+    },
+    {
+        "category": "Home",
+        "createdAt": "2025-12-09T06:45:00.000Z",
+        "description": "Hand-painted ceramic dinnerware set, microwave and dishwasher safe.",
+        "image": "https://m.media-amazon.com/images/I/51cGkk1jgDL.jpg",
+        "price": 110,
+        "seller": "Ceramic Creations",
+        "title": "Hand-Painted Ceramic Dinnerware",
+        "updatedAt": "2025-12-09T07:00:00.000Z"
+    },
+    {
+        "category": "Home",
+        "createdAt": "2025-12-09T06:30:00.000Z",
+        "description": "Handmade rattan basket, perfect for storage or as a decorative piece.",
+        "image": "https://m.media-amazon.com/images/I/61SIU-1L6vL.jpg",
+        "price": 55,
+        "seller": "Rattan Crafts",
+        "title": "Rattan Storage Basket",
+        "updatedAt": "2025-12-09T06:45:00.000Z"
+    },
+    {
+        "category": "Home",
+        "createdAt": "2025-12-09T06:15:00.000Z",
+        "description": "Handcrafted wooden candle holder set, ideal for creating a cozy atmosphere.",
+        "image": "https://m.media-amazon.com/images/I/71zX0CWr-qL.jpg",
+        "price": 40,
+        "seller": "Wooden Wonders",
+        "title": "Wooden Candle Holder Set",
+        "updatedAt": "2025-12-09T06:30:00.000Z"
+    },
+    {
+        "category": "Home",
+        "createdAt": "2025-12-09T06:00:00.000Z",
+        "description": "Hand-sewn cotton table runner with traditional block prints.",
+        "image": "https://m.media-amazon.com/images/I/61QmZ9-FkLL.jpg",
+        "price": 35,
+        "seller": "Cotton Crafts",
+        "title": "Block Print Table Runner",
+        "updatedAt": "2025-12-09T06:15:00.000Z"
+    },
+    {
+        "category": "Home",
+        "createdAt": "2025-12-09T05:45:00.000Z",
+        "description": "Handmade terracotta planter, perfect for indoor plants.",
+        "image": "https://m.media-amazon.com/images/I/71H0YYiRZzL.jpg",
+        "price": 30,
+        "seller": "Terracotta Art",
+        "title": "Terracotta Planter",
+        "updatedAt": "2025-12-09T06:00:00.000Z"
+    },
+    {
+        "category": "Home",
+        "createdAt": "2025-12-09T05:30:00.000Z",
+        "description": "Handcrafted leather journal cover, personalized with initials.",
+        "image": "https://m.media-amazon.com/images/I/619iTZXNuOL.jpg",
+        "price": 80,
+        "seller": "Leather Crafts",
+        "title": "Personalized Leather Journal",
+        "updatedAt": "2025-12-09T05:45:00.000Z"
+    },
+    {
+        "category": "Home",
+        "createdAt": "2025-12-09T05:15:00.000Z",
+        "description": "Hand-painted glass vase, unique and elegant for home decor.",
+        "image": "https://m.media-amazon.com/images/I/71zX0CWr-qL.jpg",
+        "price": 70,
+        "seller": "Glass Art Studio",
+        "title": "Hand-Painted Glass Vase",
+        "updatedAt": "2025-12-09T05:30:00.000Z"
+    },
+    {
+        "category": "Home",
+        "createdAt": "2025-12-09T05:00:00.000Z",
+        "description": "Handmade jute rug, durable and stylish for any room.",
+        "image": "https://m.media-amazon.com/images/I/61apMvwsonL.jpg",
+        "price": 100,
+        "seller": "Jute Crafts",
+        "title": "Jute Rug",
+        "updatedAt": "2025-12-09T05:15:00.000Z"
+    },
+    {
+        "category": "Home",
+        "createdAt": "2025-12-09T04:45:00.000Z",
+        "description": "Handcrafted brass candle stand, elegant and functional.",
+        "image": "https://m.media-amazon.com/images/I/711kjIdQPHL.jpg",
+        "price": 60,
+        "seller": "Brass Artisans",
+        "title": "Brass Candle Stand",
+        "updatedAt": "2025-12-09T05:00:00.000Z"
+    },
+    {
+        "category": "Home",
+        "createdAt": "2025-12-09T04:30:00.000Z",
+        "description": "Handmade ceramic soap dispenser, stylish and practical for bathrooms.",
+        "image": "https://m.media-amazon.com/images/I/61QmZ9-FkLL.jpg",
+        "price": 25,
+        "seller": "Ceramic Essentials",
+        "title": "Ceramic Soap Dispenser",
+        "updatedAt": "2025-12-09T04:45:00.000Z"
+    },
+    {
+        "category": "Home",
+        "createdAt": "2025-12-09T04:15:00.000Z",
+        "description": "Handwoven cotton throw blanket, lightweight and cozy.",
+        "image": "https://m.media-amazon.com/images/I/71H0YYiRZzL.jpg",
+        "price": 50,
+        "seller": "Cotton Weaves",
+        "title": "Cotton Throw Blanket",
+        "updatedAt": "2025-12-09T04:30:00.000Z"
+    },
+    {
+        "category": "Home",
+        "createdAt": "2025-12-09T04:00:00.000Z",
+        "description": "Handcrafted wooden picture frame, perfect for displaying photos or art.",
+        "image": "https://m.media-amazon.com/images/I/619iTZXNuOL.jpg",
+        "price": 40,
+        "seller": "Wooden Frames Co.",
+        "title": "Wooden Picture Frame",
+        "updatedAt": "2025-12-09T04:15:00.000Z"
+    }
+]
