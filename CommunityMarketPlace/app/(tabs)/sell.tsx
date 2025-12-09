@@ -93,13 +93,13 @@ async function uploadImage(uri: string, onProgress?: (progress: number) => void)
         blob = await uriToBlobXHR(uri);
         console.log('uploadImage: got blob via XHR');
     } catch (xhrErr) {
-        console.warn('uriToBlobXHR failed:', xhrErr?.message ?? xhrErr);
+        console.warn('uriToBlobXHR failed:', xhrErr);
         // try fetch
         try {
             blob = await uriToBlobFetch(uri);
             console.log('uploadImage: got blob via fetch');
         } catch (fetchErr) {
-            console.warn('uriToBlobFetch failed:', fetchErr?.message ?? fetchErr);
+            console.warn('uriToBlobFetch failed:', fetchErr);
             // fallthrough to base64 fallback
         }
     }
@@ -154,9 +154,9 @@ async function uploadImage(uri: string, onProgress?: (progress: number) => void)
         return url;
     } catch (finalErr) {
         console.error('uploadImage: all methods failed. final error:', finalErr);
-        // Throw NSError with useful message
-        throw new Error(`uploadImage failed for ${uri}. See logs for details. ${finalErr?.message ?? finalErr}`);
     }
+
+    return "";
 }
 
 // fetch the products collection from firebase
