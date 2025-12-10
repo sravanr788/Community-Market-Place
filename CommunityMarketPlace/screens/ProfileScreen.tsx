@@ -13,7 +13,6 @@ export default function ProfileScreen() {
 
     const handleLogout = async () => {
         await logout();
-        router.replace('/(tabs)');
     };
 
     return (
