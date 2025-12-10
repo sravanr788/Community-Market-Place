@@ -173,9 +173,6 @@ async function fetchProducts() {
             return;
         }
 
-        snapshot.forEach((doc) => {
-            console.info("🟩 Doc ID:", doc.id, "→", doc.data());
-        });
 
         console.info("✅ Fetch finished. Total docs:", snapshot.size);
     } catch (err) {

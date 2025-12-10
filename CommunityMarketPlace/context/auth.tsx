@@ -3,6 +3,7 @@ import React, { createContext, useContext, useEffect, useState } from 'react';
 import { onAuthStateChanged, User, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut } from 'firebase/auth';
 import { auth } from '../firebaseConfig';
 import { storeUserSession, getUserSession, clearUserSession } from '../utils/session';
+import { navigate } from 'expo-router/build/global-state/routing';
 
 const AuthContext = createContext<any>(null);
 
