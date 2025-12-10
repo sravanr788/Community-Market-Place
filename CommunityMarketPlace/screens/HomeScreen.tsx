@@ -8,6 +8,8 @@ import { ThemedView } from '@/components/themed-view';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { Product, RootStackParamList } from '@/types';
+import { getUserSession } from '@/utils/session';
+import { navigate } from 'expo-router/build/global-state/routing';
 
 export default function HomeScreen() {
     const { width } = useWindowDimensions();
@@ -48,6 +50,7 @@ export default function HomeScreen() {
         );
 
         return () => unsubscribe();
+
     }, []);
 
     const renderItem = ({ item }: { item: Product }) => (

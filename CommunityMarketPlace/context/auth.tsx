@@ -2,6 +2,8 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { onAuthStateChanged, User, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut } from 'firebase/auth';
 import { auth } from '../firebaseConfig';
+import { storeUserSession, getUserSession, clearUserSession } from '../utils/session';
+import { navigate } from 'expo-router/build/global-state/routing';
 
 const AuthContext = createContext<any>(null);
 
@@ -14,8 +16,24 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
+        const loadSession = async () => {
+            const sessionUser = await getUserSession();
+            if (sessionUser) {
+                console.log('User session loaded', sessionUser);
+                setUser(sessionUser);
+                setLoading(false);
+            }
+        };
+        loadSession();
+
         const unsubscribe = onAuthStateChanged(auth, (user) => {
-            setUser(user);
+            if (user) {
+                storeUserSession(user);
+                setUser(user);
+            } else {
+                clearUserSession();
+                setUser(null);
+            }
             setLoading(false);
         });
 
@@ -25,6 +43,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const logout = async () => {
         try {
             await signOut(auth);
+            await clearUserSession();
         } catch (e) {
             console.error(e);
         }
