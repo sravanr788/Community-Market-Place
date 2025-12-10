@@ -30,7 +30,7 @@ function RootLayoutNav() {
   }, [user, segments, loading]);
 
   if (loading) {
-    return null; // Or a splash screen
+    return null;
   }
 
   return (
