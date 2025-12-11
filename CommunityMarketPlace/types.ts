@@ -10,4 +10,5 @@ export type RootStackParamList = {
     Home: undefined;
     ProductDetail: { data: Product };
     Profile: undefined;
+    EditProfile: undefined;
 };

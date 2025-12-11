@@ -3,6 +3,7 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import HomeScreen from './screens/HomeScreen';
 import ProductDetailScreen from './screens/ProductDetailScreen';
 import ProfileScreen from './screens/ProfileScreen';
+import EditProfileScreen from './screens/EditProfileScreen';
 
 const Stack = createNativeStackNavigator();
 
@@ -22,7 +23,12 @@ export default function AppNavigator() {
             <Stack.Screen
                 name="Profile"
                 component={ProfileScreen}
-                options={{ title: 'Profile' }}
+                options={{ headerShown: false }}
+            />
+            <Stack.Screen
+                name="EditProfile"
+                component={EditProfileScreen}
+                options={{ headerShown: false }}
             />
         </Stack.Navigator>
     );
